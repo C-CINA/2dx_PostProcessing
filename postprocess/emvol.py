@@ -15,6 +15,8 @@ from EMAN2 import *
 class EMVol(libpyEMData2.EMData):
     '''
     A class which inherits EMData class from EMAN2.
+    Has following additional fields:
+    nx, ny, nz, mean, std, min_vol, max_vol, intensity, fourier_size
     '''
     
     def __init__(self, image):
@@ -42,8 +44,7 @@ class EMVol(libpyEMData2.EMData):
         
     def info(self):
         '''
-        Prints the general information of the image:
-        mean, std, min_vol, max_vol, intensity, size 
+        Prints the general information of the image
         '''
         if (self.is_complex()):
             s = ""
@@ -57,7 +58,7 @@ class EMVol(libpyEMData2.EMData):
         else:
             print "Real image:"
             
-        print 'size: {0:4d}X{1:4d}X{2:4d}' .format(self.nx, self.ny, self.nz)
+        print 'size: {0:4d} X {1:4d} X {2:4d}' .format(self.nx, self.ny, self.nz)
         self.print_statistics()
         
         

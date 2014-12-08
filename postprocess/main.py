@@ -17,12 +17,12 @@ import utils.SystemUtils as system
 
 if __name__ =='__main__':
     
-    print '\nInitiated...\n'
+    print '\nProgram Initiated...\n'
     
     # Get the inputs
-    input_parser = inp.InputParser()
-    inputs = input_parser.parse(sys.argv[1:])
+    input_parser = inp.InputParser(args = sys.argv[1:])
     input_parser.print_inputs()
+    inputs = input_parser.arguments
 
     # Check Input File
     dir_in = system.get_dir_path(inputs.merged_image)
