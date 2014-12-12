@@ -137,7 +137,6 @@ class EMVol(libpyEMData2.EMData):
         resolutions between lowest and highest with a spacing described in
         the input.
         '''
-        intensity_profile = []
         for res in numpy.arange(highest_res, lowest_res, res_spacing):
             intensity_profile.append(self.get_insentisy_for_resoluion(res, res_spacing/2.0))
             

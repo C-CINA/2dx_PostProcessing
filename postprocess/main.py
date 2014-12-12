@@ -32,7 +32,7 @@ if __name__ =='__main__':
     filename_in = system.get_file_name(inputs.merged_image)
     
     vol_input = emvol.EMVol(inputs.merged_image)
-    print "Image Read from:\n{}" .format(dir_in+filename_in)
+    print "Image Read from:\n {}" .format(dir_in+filename_in)
     vol_input.info()
     '''
     try:
@@ -43,6 +43,7 @@ if __name__ =='__main__':
         print "Error in loading the mrc image file:\n{}" .format(dir_in+ "/" +filename_in)
         exit(1)
     '''
+    
     # Check Symmetry Input
     possible_symmetries = ["C1", "C2","C4"]
     if inputs.symmetry .upper() not in possible_symmetries:
@@ -52,8 +53,8 @@ if __name__ =='__main__':
     # Prepare for iterations
     print 'Preparing for the iterations...'
     dir_out = dir_in + "/" + system.get_current_time()
-    print '\tCreating output directory:'
-    print '\t{}' .format(dir_out)
+    print ' Creating output directory:'
+    print ' {}\n' .format(dir_out)
     system.create_dir(dir_out)
     
     #Set the output for OutputUtils

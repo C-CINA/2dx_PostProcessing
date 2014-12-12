@@ -25,7 +25,7 @@ class Constraints:
     _amp_epsilon: Amplitude epsilon value below which amplitudes will be considered as insignificant during processing
     _hkz_file: File used to read reflections in hkz format
     _z_spacing: spacing between z points in the hkz file
-    outUtil: instance of class OutputUtils used for outputing 
+    _outUtil: instance of class OutputUtils used for output
     '''
     
     def __init__(self, inputs, outUtil):
@@ -48,10 +48,15 @@ class Constraints:
         
         itr_real = initial_volume
         initial_fou = initial_volume.get_fft()
+        
+        print 'Creating a volume from hkz file:\n {}' .format(self._hkz_file)
         vol_known = emvol.create_known_vol(self._hkz_file, itr_real.nx, itr_real.ny, itr_real.nz, self._z_spacing)
         vol_known.write_image(self._outUtil.output_path + "/" + "hkz_vol.mrc")
         
         output_root = self._outUtil.output_path
+        
+        print '\nStarting the iterations..'
+        
         for i in range(0, self._iterations):
             print "#\nIteration {}.." .format(i+1)
             # Create a directory for output
@@ -61,22 +66,27 @@ class Constraints:
             
             # Apply the real space constraints
             membrane_mask = get_membrane_slab_mask(itr_real, self._membrane_height)
+            membrane_mask.write_image(self._outUtil.output_path + "/" + "membrane_mask.mrc")
             real_masked = itr_real*membrane_mask
             itr_real = emvol.EMVol(real_masked*0.5 + itr_real*0.5)
+            itr_real.write_image(self._outUtil.output_path + "/" + "real_space_constrained.mrc")
             
             # Apply the Fourier space constraints
             itr_fou = itr_real.get_fft()
-            itr_fou = replace_true_reflections(itr_fou, initial_fou, self._outUtil, 0.5)
-            itr_fou = increase_high_res_intensity(itr_fou, self._highest_res, self._outUtil)
-            
+            itr_fou = replace_true_reflections(itr_fou, initial_fou, self._outUtil, self._amp_epsilon)
+            #itr_fou = increase_high_res_intensity(itr_fou, self._highest_res, self._outUtil)
             itr_fou = emvol.EMVol(itr_fou)
+            itr_fou = itr_fou.low_pass(self._highest_res)
+            itr_fou.write_image(self._outUtil.output_path + "/" + "fourier_space_constrained.mrc")
             
-            
-            #Convert back and symmetrize
+            #Convert back
             itr_real = itr_fou.get_ift()
             itr_real = itr_real.symvol(self._symmetry)*0.01 + itr_real*(1-0.01)
             itr_real = emvol.EMVol(itr_real)
             itr_real.write_image(self._outUtil.output_path+"/final_vol.mrc")
+            
+            print 'Final volume statistics:'
+            itr_real.print_statistics()
             
             # Calculate the measures to track the progress of the iteration
             

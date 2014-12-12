@@ -25,7 +25,7 @@ def increase_high_res_intensity(vol_fou, highest_res, outUtil):
     bp_low_res = resolution_values[minima_indices[0]]
     bp_high_res = highest_res
     
-    print "Increasing intensity in the resolution range ({0:4.1f}, {1:4.1f})" .format(bp_high_res, bp_low_res)
+    print "Increasing intensity in the resolution range ({0:4.1f}, {1:4.1f}).." .format(bp_high_res, bp_low_res)
     
     vol_bp = vol_fou.band_pass(1./bp_low_res, 1./bp_high_res)
     mask_bp = EMVol(binarize(vol_bp))
@@ -37,18 +37,19 @@ def increase_high_res_intensity(vol_fou, highest_res, outUtil):
 
 
 
-def replace_true_reflections(vol_fourier, vol_known, outUtil, fraction_to_replace=0.9):
+def replace_true_reflections(vol_fourier, vol_known, outUtil, amp_epsilon):
     '''
     Replaces reflections of vol_fourier with vol_known
     '''    
     
-    # Change the non-edges ones only.
-    for ix in range(0, vol_fourier.nx):
+    print 'Replacing the reflections with known..'
+    vol_fourier = EMVol(vol_fourier)
+    
+    for ix in range(0, int(vol_fourier.nx/2)):
         for iy in range(0, vol_fourier.ny):
             for iz in range(0, vol_fourier.nz):
                 ref_known = vol_known[ix, iy, iz]
-                if(numpy.absolute(ref_known) > 0.0):
-                    ref = vol_fourier[ix, iy, iz]
-                    vol_fourier[ix, iy, iz] = ref_known*fraction_to_replace + ref*(1-fraction_to_replace) 
+                if(numpy.absolute(ref_known) > amp_epsilon):
+                    vol_fourier[ix, iy, iz] = ref_known
 
     return vol_fourier

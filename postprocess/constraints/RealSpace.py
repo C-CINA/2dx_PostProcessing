@@ -54,6 +54,8 @@ def get_adaptive_slab_mask(volume, membrane_height):
     SAME CUTS ON Lower HALF
     '''
     
+    print 'Adaptively masking the membrane..'
+    
     nx = volume.get_xsize()
     ny = volume.get_ysize()
     nz = volume.get_zsize()
@@ -70,18 +72,27 @@ def get_adaptive_slab_mask(volume, membrane_height):
     dens_profile_change = [d1-d2 for d1,d2 in zip(dens_profile[1:], dens_profile)]
     change_max_indices = get_local_maxima(dens_profile_change)
     
+    if(change_max_indices[0] < z_center):
+        second_cut = change_max_indices[0]
+    
+    '''
     change_max_possible = []
     for i in change_max_indices:
         if i < z_center:
             change_max_possible.append(i)
             
     second_cut = dens_profile_change.index(max([dens_profile_change[c] for c in change_max_possible]))
+    '''
+    
+    if (second_cut < first_cut):
+        second_cut = first_cut
     
     #Calculate third cut
     third_cut = second_cut + int(nz*0.1)
     if(third_cut >= z_center):
         third_cut = second_cut
     
+    print 'Cuts applied: {} {} {}' .format(first_cut, second_cut, third_cut)
     # Generate the mask
     threshold_mask = binarize(volume, volume.mean+0.5*volume.std)
     mask =  model_blank(nx,ny,nz)
