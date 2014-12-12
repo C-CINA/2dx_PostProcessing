@@ -81,7 +81,8 @@ class InputParser:
                     inptype = None
             
                 self.inputs.append(Input(name, identifier, default, inptype, help))
-                  
+        
+        f.close()          
 
     def _init_parser(self):
         description = 'A program which does a post processing the 3D-Image(.mrc) ' \

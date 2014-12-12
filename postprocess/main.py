@@ -11,9 +11,12 @@
 import sys
 
 import emvol
+from applyconstraints import Constraints
 
+from constraints import *
 import utils.InputUtils as inp
 import utils.SystemUtils as system
+import utils.OutputUtils as out
 
 if __name__ =='__main__':
     
@@ -28,6 +31,10 @@ if __name__ =='__main__':
     dir_in = system.get_dir_path(inputs.merged_image)
     filename_in = system.get_file_name(inputs.merged_image)
     
+    vol_input = emvol.EMVol(inputs.merged_image)
+    print "Image Read from:\n{}" .format(dir_in+filename_in)
+    vol_input.info()
+    '''
     try:
         vol_input = emvol.EMVol(inputs.merged_image)
         print "Image Read from:\n{}" .format(dir_in+filename_in)
@@ -35,7 +42,7 @@ if __name__ =='__main__':
     except:
         print "Error in loading the mrc image file:\n{}" .format(dir_in+ "/" +filename_in)
         exit(1)
-    
+    '''
     # Check Symmetry Input
     possible_symmetries = ["C1", "C2","C4"]
     if inputs.symmetry .upper() not in possible_symmetries:
@@ -49,5 +56,14 @@ if __name__ =='__main__':
     print '\t{}' .format(dir_out)
     system.create_dir(dir_out)
     
-    #
+    #Set the output for OutputUtils
+    outUtil = out.OutputUtils(output_path=dir_out)
+    
+    #apply constraints
+    constrts = Constraints(inputs, outUtil)
+    vol_processed = constrts.apply_constraints(vol_input)
+    
+    vol_processed.write_image(dir_out+"/final_processed.mrc")
+    
+    
     

@@ -16,8 +16,10 @@
 # *Supported types: int, str, float, None
 #
 merged_image	None	None	None	The merged 3D image of format (.mrc) which needs to be post-processed
+hkz_file		None	None	None	hkz file to be used as ground truth for reflections
 iterations		i		20		int		Number of post-processing iterations to be performed
 symmetry		s		C1		str		Point group symmetry present in the volume
 membrane_height	l		0.8		float	Membrane height for membrane slab; interprets value between 0 and 1 as fraction of z-height
 highest_res		r		2.0 	float	The maximum resolution present in the map (in A)
-amp_epsilon		e		0.001	float	Amplitude epsilon value below which amplitudes will be considered as zero
+z_spacing		z		0.0001  float	Spacing that occurs in the input hkz file
+amp_epsilon		e		0.001	float	Amplitude epsilon value below which amplitudes will be considered as insignificant during processing
