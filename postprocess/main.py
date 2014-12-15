@@ -33,7 +33,7 @@ if __name__ =='__main__':
     
     vol_input = emvol.EMVol(inputs.merged_image)
     print "Image Read from:\n {}" .format(dir_in+filename_in)
-    vol_input.info()
+    vol_input.print_info()
     '''
     try:
         vol_input = emvol.EMVol(inputs.merged_image)

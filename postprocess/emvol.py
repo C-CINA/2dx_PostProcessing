@@ -17,7 +17,7 @@ class EMVol(libpyEMData2.EMData):
     '''
     A class which inherits EMData class from EMAN2.
     Has following additional fields:
-    nx, ny, nz, mean, std, min_vol, max_vol, intensity, fourier_size
+    nx, ny, nz
     '''
     
     def __init__(self, image):
@@ -25,27 +25,9 @@ class EMVol(libpyEMData2.EMData):
         self.nx = self.get_xsize()
         self.ny = self.get_ysize()
         self.nz = self.get_zsize()
-        self.update_statistics()
+
         
-        
-    def update_statistics(self):
-        '''
-        Updates the following statistics of the image:
-        mean, std, min_vol, max_vol, intensity, fourier_size 
-        '''
-        self.update()
-        [mean, std, min_vol, max_vol] = libpyUtils2.Util.infomask(self, None, True)
-        self.mean = mean
-        self.std = std
-        self.min_vol = min_vol
-        self.max_vol = max_vol
-        
-        intensity, size = self.get_intensity_and_fourier_size()
-        self.intensity = intensity
-        self.fourier_size = size
-        
-        
-    def info(self):
+    def print_info(self):
         '''
         Prints the general information of the image
         '''
@@ -70,17 +52,42 @@ class EMVol(libpyEMData2.EMData):
         Prints the following statistics of the image:
         mean, std, min_vol, max_vol, intensity, size 
         '''
-        print 'volume (min, max) = ({0:8.2f}, {1:8.2f})' .format(self.min_vol, self.max_vol)
-        print 'mean, std = ({0:8.2f}, {1:8.2f})' .format(self.mean, self.std)
-        print 'total intensity, fourier size = ({0:10.2e}, {1:10d})\n' .format(self.intensity, self.fourier_size)
-           
+        
+        [mean, std, min_vol, max_vol] = self.get_statistics()
+        print 'volume (min, max) = ({0:8.2f}, {1:8.2f})' .format(min_vol, max_vol)
+        print 'mean, std = ({0:8.2f}, {1:8.2f})' .format(mean, std)
+        
+        intensity, fourier_size = self.get_intensity_and_fourier_size()
+        print 'total intensity, fourier size = ({0:10.3e}, {1:10d})\n' .format(intensity, fourier_size)
+    
+    
+    def get_statistics(self):
+        '''
+        Retuens the following statistics of the image:
+        mean, std, min_vol, max_vol 
+        ''' 
+        self.update()
+        [mean, std, min_vol, max_vol] = libpyUtils2.Util.infomask(self, None, True)
+        
+        return [mean, std, min_vol, max_vol]
+    
+    
+    def get_mean(self):
+        [mean, std, min_vol, max_vol] = self.get_statistics()
+        return mean  
+    
+    
+    def get_std(self):
+        [mean, std, min_vol, max_vol] = self.get_statistics()
+        return std 
+    
     
     def get_fft(self):
         '''
         Get the fft of real EMVol else returns the same
         '''
         if(self.is_real()):
-            return EMVol(self.do_fft())
+            return EMVol(fft(self))
         else:
             return self
         
@@ -90,19 +97,23 @@ class EMVol(libpyEMData2.EMData):
         Get the inverse inverse ft of real EMVol else returns the same
         '''
         if(self.is_complex()):
-            return EMVol(self.do_ift())
+            return EMVol(fft(self))
         else:
             return self
             
     def get_intensity_and_fourier_size(self):
         '''
         Calculates the intensity and total number the amplitudes which are not zero
-        Returns a list of two values: [intensity, size]
+        Returns a list of two values: intensity, size
         '''
-        if(self.is_real()):
-            amps = self.get_fft().get_fft_amplitude().get_data_as_vector()
-        else:
-            amps = self.get_fft_amplitude().get_data_as_vector()
+        
+        image_fft = self.get_fft()
+        
+        xlimit = int(image_fft.nx/2)
+        ylimit = image_fft.ny
+        zlimit = image_fft.nz
+        
+        amps = [numpy.absolute(image_fft[ix, iy, iz]) for ix in range(0, xlimit) for iy in range(0, ylimit) for iz in range(0, zlimit)]
         
         intensity = sum(numpy.power(amps, 2))
         size = len(numpy.where(numpy.absolute(amps) > 0)[0])
@@ -137,6 +148,7 @@ class EMVol(libpyEMData2.EMData):
         resolutions between lowest and highest with a spacing described in
         the input.
         '''
+        intensity_profile = []
         for res in numpy.arange(highest_res, lowest_res, res_spacing):
             intensity_profile.append(self.get_insentisy_for_resoluion(res, res_spacing/2.0))
             
@@ -151,8 +163,8 @@ class EMVol(libpyEMData2.EMData):
         low_freq = 1.0/(resolution + decay_width)
         high_freq = 1.0/(resolution - decay_width)
         vol_bp = self.band_pass(low_freq, high_freq)
-        print [low_freq, high_freq, vol_bp.intensity]
-        return vol_bp.intensity
+        intensity, size = vol_bp.get_intensity_and_fourier_size()
+        return intensity
     
         
     def z_density_profile(self):
@@ -172,6 +184,8 @@ class EMVol(libpyEMData2.EMData):
             densities.append(dens) 
             
         return densities
+    
+
     
     
 #-----END OF CLASS------

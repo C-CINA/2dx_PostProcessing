@@ -1,22 +1,22 @@
-from numpy import *
+import numpy
 
 def get_local_minima(data):
     '''
     Returns the indices of local minima of the input list
     '''
-    return (diff(sign(diff(data))) > 0).nonzero()[0] + 1
+    return (numpy.diff(numpy.sign(numpy.diff(data))) > 0).nonzero()[0] + 1
 
 def get_local_maxima(data):
     '''
     Returns the indices of local maxima of the input list
     '''
-    return (diff(sign(diff(data))) < 0).nonzero()[0] + 1
+    return (numpy.diff(numpy.sign(numpy.diff(data))) < 0).nonzero()[0] + 1
 
 def get_local_extemum(data):
     '''
     Returns the indices of local extremums of the input list
     '''
-    diff(sign(diff(data))).nonzero()[0] + 1
+    numpy.diff(numpy.sign(numpy.diff(data))).nonzero()[0] + 1
 
 def get_nearest_odd(num):
     '''

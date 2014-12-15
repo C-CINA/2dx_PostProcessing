@@ -46,17 +46,18 @@ class Constraints:
         returns: EMVol class object
         '''
         
-        itr_real = initial_volume
+        
         initial_fou = initial_volume.get_fft()
         
         print 'Creating a volume from hkz file:\n {}' .format(self._hkz_file)
-        vol_known = emvol.create_known_vol(self._hkz_file, itr_real.nx, itr_real.ny, itr_real.nz, self._z_spacing)
+        vol_known = emvol.create_known_vol(self._hkz_file, initial_fou.nx, initial_fou.ny, initial_fou.nz, self._z_spacing)
         vol_known.write_image(self._outUtil.output_path + "/" + "hkz_vol.mrc")
         
         output_root = self._outUtil.output_path
         
         print '\nStarting the iterations..'
         
+        itr_real = initial_volume
         for i in range(0, self._iterations):
             print "#\nIteration {}.." .format(i+1)
             # Create a directory for output
@@ -73,11 +74,10 @@ class Constraints:
             
             # Apply the Fourier space constraints
             itr_fou = itr_real.get_fft()
-            itr_fou = replace_true_reflections(itr_fou, initial_fou, self._outUtil, self._amp_epsilon)
+            itr_fou = replace_true_reflections(itr_fou, vol_known.get_fft(), self._outUtil, self._amp_epsilon)
             #itr_fou = increase_high_res_intensity(itr_fou, self._highest_res, self._outUtil)
             itr_fou = emvol.EMVol(itr_fou)
             itr_fou = itr_fou.low_pass(self._highest_res)
-            itr_fou.write_image(self._outUtil.output_path + "/" + "fourier_space_constrained.mrc")
             
             #Convert back
             itr_real = itr_fou.get_ift()

@@ -1,6 +1,6 @@
 import numpy
 
-from EMAN2 import  *
+from EMAN2 import *
 from sparx import *
 
 from emvol import EMVol
