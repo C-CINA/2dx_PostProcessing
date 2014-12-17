@@ -1,5 +1,11 @@
 import numpy
 
+def sign(number):
+    """Will return 1 for positive,
+    -1 for negative, and 0 for 0"""
+    try:return number/abs(number)
+    except ZeroDivisionError:return 0
+
 def get_local_minima(data):
     '''
     Returns the indices of local minima of the input list

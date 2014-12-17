@@ -43,7 +43,6 @@ def replace_true_reflections(vol_fourier, vol_known, outUtil, amp_epsilon):
     '''    
     
     print 'Replacing the reflections with known..'
-    vol_fourier = EMVol(vol_fourier)
     
     for ix in range(0, int(vol_fourier.nx/2)):
         for iy in range(0, vol_fourier.ny):

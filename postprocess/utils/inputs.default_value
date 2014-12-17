@@ -15,11 +15,13 @@
 # *Put None whenever a field is not required
 # *Supported types: int, str, float, None
 #
-merged_image	None	None	None	The merged 3D image of format (.mrc) which needs to be post-processed
-hkz_file		None	None	None	hkz file to be used as ground truth for reflections
+hkz_file		None	None	None	Input hkz file to be used to generate volume; columns in the order: (h, k, z*, amplitude, phase, sigma_amplitude, sigma_phase, iq_value)
+nx				x		131		int		Expected x dimension of the real volume
+ny				y		131		int		Expected y dimension of the real volume
+nz				z		400		int		Expected z dimension of the real volume
+input_max_HK	m		30		int		The maximum value of the miller index which would limit the spots read from the input file
 iterations		i		20		int		Number of post-processing iterations to be performed
-symmetry		s		C1		str		Point group symmetry present in the volume
+symmetry		s		P1		str		Point group symmetry present in the volume
 membrane_height	l		0.8		float	Membrane height for membrane slab; interprets value between 0 and 1 as fraction of z-height
 highest_res		r		2.0 	float	The maximum resolution present in the map (in A)
-z_spacing		z		0.0001  float	Spacing that occurs in the input hkz file
 amp_epsilon		e		0.001	float	Amplitude epsilon value below which amplitudes will be considered as insignificant during processing
