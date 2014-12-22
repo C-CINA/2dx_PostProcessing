@@ -41,7 +41,7 @@ if __name__ =='__main__':
     
     # Convert input hkz file to mrc
     print "Converting image from:\n {}/{}" .format(dir_in,filename_in)
-    vol_input_raw = EMVol.from_hkz_file(inputs.hkz_file, inputs.nx, inputs.ny, inputs.nz, inputs.input_max_HK)
+    vol_input_raw = EMVol.from_hkz_file(inputs.hkz_file, inputs.nx, inputs.ny, inputs.nz, inputs.apix, inputs.max_resolution)
     outUtil.file_name = "input_volume_raw.mrc"
     print "Done.. writing at {}\n" .format(outUtil.get_write_name())
     vol_input_raw.write_image(outUtil.get_write_name())

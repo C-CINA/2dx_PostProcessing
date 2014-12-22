@@ -40,7 +40,7 @@ class EMVol(libpyEMData2.EMData):
         return cls(model_blank(nx, ny, nz, bckg))
 
     @classmethod
-    def from_hkz_file(cls, hkz_file, nx, ny, nz, max_hk):
+    def from_hkz_file(cls, hkz_file, nx, ny, nz, apix, max_resolution):
         '''
         Class creator from hkz file. 
         INPUTS:
@@ -55,11 +55,11 @@ class EMVol(libpyEMData2.EMData):
 
         
         f = open(hkz_file)
+        
+        nyquist = 1.0/(2*apix)
         current_h = -1
         current_k = -1
         current_l = -1
-        #amplitudes = []
-        #phases = []
         reflections = []
         foms = []
         fom_xarg_foms, fom_xarg_xargs = fom_to_xarg_array()
@@ -67,57 +67,58 @@ class EMVol(libpyEMData2.EMData):
             [h, k, z, a, ph, sa, sph, iq] = line.split()
             a = float(a)
             ph = float(ph)
+            
+            # Miller indices
             h = int(h)
             k = int(k)
+            l = int(float(z)*nz) # Convert the z* to l
             
-            # Convert the z* to l
-            l = int(float(z)*nz)
+            #Resolutions
+            x_res = y_res = z_res = 1000 # Definition of infinity
+            if not (h==0 or k==0 or l==0):
+                [x_res, y_res, z_res] = [dim/(2*nyquist*miller) for dim,miller in zip([nx, ny, nz],[h, k, l])]
+            
+            # Shift the phase so that protein is in center of z
             ph += 180.0*l
+            
+            # FOMs
             fom = numpy.cos(float(sph)/180*numpy.pi)
             if(float(sph) > 90):
                 fom = 0
             
-            if(current_h!=h or current_k!=k or current_l!=l):
-                if(current_h!=-1):
-                    xarg_sum = sum(numpy.interp(foms*100, fom_xarg_foms, fom_xarg_xargs))
-                    
-                    #Modifoed Bessel functions
-                    i0 = special.i0(xarg_sum)
-                    i1 = special.i1(xarg_sum)
-                    xarg_avg = i1/i0
-                    alternating = xarg_avg
-                    if not  0 <= xarg_avg <= 1:
-                        print 'WARNING: Unexpected values from modified Bessel functions: xarg={}, i0={}, i1={}' .format(xarg_avg, i0, i1)
-                        xarg_avg = nump.cos(1.0/xarg_sum)
-                    
-                    fom_sum = sum(foms)
-                    foms = [fo*(xarg_avg/fom_sum) for fo in foms if not fom_sum==0]
-                    reflections_sum = sum([ref_i*fo for ref_i,fo in zip(reflections, foms)])
-                    amplitude_sum = numpy.absolute(reflections_sum)
-                    phase_sum = numpy.angle(reflections_sum)
-                    #amplitude_sum = sum([amp_i*fo for amp_i,fo in zip(amplitudes, foms)])
-                    #phase_sum = numpy.arctan(sum([numpy.tan(ph_i*numpy.pi/180) for ph_i in phases]))
-                    #phase_sum = sum([(ph_i*numpy.pi/180) for ph_i in phases])
-                    if(current_h<max_hk and current_k<max_hk and current_l<max_hk):
+            if not (x_res < max_resolution or y_res < max_resolution or z_res< max_resolution):
+                if(current_h!=h or current_k!=k or current_l!=l):
+                    if(current_h!=-1):
+                        print [h, k, l, x_res, y_res, z_res]
+                        xarg_sum = sum(numpy.interp(foms*100, fom_xarg_foms, fom_xarg_xargs))
+                        
+                        #Modified Bessel function values at 0th and 1st order
+                        i0 = special.i0(xarg_sum)
+                        i1 = special.i1(xarg_sum)
+                        xarg_avg = i1/i0
+                        alternating = xarg_avg
+                        if not  0 <= xarg_avg <= 1:
+                            print 'WARNING: Unexpected values from modified Bessel functions: xarg={}, i0={}, i1={}' .format(xarg_avg, i0, i1)
+                            xarg_avg = nump.cos(1.0/xarg_sum)
+                        
+                        fom_sum = sum(foms)
+                        foms = [fo*(xarg_avg/fom_sum) for fo in foms if not fom_sum==0]
+                        reflections_sum = sum([ref_i*fo for ref_i,fo in zip(reflections, foms)])
+                        amplitude_sum = numpy.absolute(reflections_sum)
+                        phase_sum = numpy.angle(reflections_sum)
                         vol_fourier.set_value_at(2*current_h, current_k, current_l, amplitude_sum*numpy.cos(phase_sum))
                         vol_fourier.set_value_at(2*current_h+1, current_k, current_l, amplitude_sum*numpy.sin(phase_sum))
-                    del reflections
-                    #del amplitudes[:]
-                    #del phases[:]
-                    del foms[:]
-                    reflections = []
-                    #amplitudes = []
-                    #phases = []
-                    foms = []
+                        del reflections
+                        del foms[:]
+                        reflections = []
+                        foms = []
+                        
+                    current_h = h
+                    current_k = k
+                    current_l = l
                     
-                current_h = h
-                current_k = k
-                current_l = l
-                
-            reflections.append(numpy.complex(a*numpy.cos(ph*numpy.pi/180), a*numpy.sin(ph*numpy.pi/180)))    
-            #amplitudes.append(a)
-            #phases.append(ph)
-            foms.append(fom)
+                reflections.append(numpy.complex(a*numpy.cos(ph*numpy.pi/180), a*numpy.sin(ph*numpy.pi/180)))
+                foms.append(fom)
         
         f.close()    
         return vol_fourier.get_ift()

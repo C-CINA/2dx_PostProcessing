@@ -24,7 +24,7 @@ class Constraints:
     _membrane_height: Membrane height for membrane slab; interprets value between 0 and 1 as fraction of z-height
     _iterations: number of post-processing iterations to be performed
     _symmetry: Point group symmetry present in the volume
-    _highest_res: The maximum resolution present in the map (in A)
+    _max_resolution: The maximum resolution present in the map (in A)
     _amp_epsilon: Amplitude epsilon value below which amplitudes will be considered as insignificant during processing
     _outUtil: instance of class OutputUtils used for output
     '''
@@ -33,7 +33,7 @@ class Constraints:
         self._membrane_height = inputs.membrane_height
         self._iterations = inputs.iterations
         self._symmetry = inputs.symmetry
-        self._highest_res = inputs.highest_res
+        self._max_resolution = inputs.max_resolution
         self._amp_epsilon = inputs.amp_epsilon
         self._outUtil = outUtil
         
@@ -68,8 +68,8 @@ class Constraints:
             # Apply the Fourier space constraints
             itr_fou = itr_real.get_fft()
             itr_fou = replace_true_reflections(itr_fou, initial_fou, self._outUtil, self._amp_epsilon, 0.9)
-            #itr_fou = increase_high_res_intensity(itr_fou, self._highest_res, self._outUtil)
-            itr_fou = itr_fou.low_pass(self._highest_res)
+            #itr_fou = increase_high_res_intensity(itr_fou, self._max_resolution, self._outUtil)
+            itr_fou = itr_fou.low_pass(self._max_resolution)
             
             #Convert back
             itr_real = itr_fou.get_ift()
@@ -80,7 +80,7 @@ class Constraints:
             itr_real.print_statistics(self._amp_epsilon)
 
             #self._outUtil.file_name = "radial_intensity.png"
-            #self._outUtil.write_radial_intensity_image(itr_real, self._highest_res)            
+            #self._outUtil.write_radial_intensity_image(itr_real, self._max_resolution)            
             # Calculate the measures to track the progress of the iteration
         
         
