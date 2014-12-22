@@ -40,28 +40,29 @@ if __name__ =='__main__':
     outUtil = out.OutputUtils(output_path=dir_out)
     
     # Convert input hkz file to mrc
-    print "Converting image from:\n {}" .format(dir_in+filename_in)
+    print "Converting image from:\n {}/{}" .format(dir_in,filename_in)
     vol_input_raw = EMVol.from_hkz_file(inputs.hkz_file, inputs.nx, inputs.ny, inputs.nz, inputs.input_max_HK)
     outUtil.file_name = "input_volume_raw.mrc"
-    print "Done.. writing at {}" .format(outUtil.get_write_name())
+    print "Done.. writing at {}\n" .format(outUtil.get_write_name())
     vol_input_raw.write_image(outUtil.get_write_name())
     
     # Symmetrize input volume
-    vol_input = vol_input_raw.symmetrize(inputs.symmetry)
+    vol_input = vol_input_raw.symmetrize(inputs.symmetry, inputs.amp_epsilon)
     outUtil.file_name = "input_volume_symmetrized.mrc"
-    print "Done.. writing at {}" .format(outUtil.get_write_name())
+    print "Done.. writing at {}\n" .format(outUtil.get_write_name())
     vol_input.write_image(outUtil.get_write_name())
     
     print "Input volume information:"
-    vol_input.print_info()
+    vol_input.print_info(inputs.amp_epsilon)
         
     # Prepare for iterations
     constrts = Constraints(inputs, outUtil)
     vol_processed = constrts.apply_constraints(vol_input)
     
     # Write final output
+    outUtil.output_path = dir_out
     outUtil.file_name = "final_processed.mrc"
-    print "Done.. writing at {}" .format(outUtil.get_write_name())
+    print "Done.. writing at {}\n" .format(outUtil.get_write_name())
     vol_processed.write_image(outUtil.get_write_name())
   
     

@@ -1,5 +1,8 @@
 import sys
 import numpy
+import time
+
+from joblib import Parallel, delayed
 
 import emvol
 
@@ -28,7 +31,7 @@ class Xtal_Symmetry:
         '''
         
         
-    def symmetrize(self, volume):
+    def symmetrize(self, volume, amp_epsilon):
         
         # Convert the volume to Fourier space
         vol_fourier = volume.get_fft()
@@ -54,6 +57,8 @@ class Xtal_Symmetry:
         assignments = numpy.zeros((h_max+1, ny, nz), numpy.int) #count of number of times assigned
         
         # Loop over all the indices (only in one half of the possible H indices)
+        
+        start_time = time.time()
         for ix in range(0, h_max+1):
             for iy in range(0, ny):
                 for iz in range(0, nz):
@@ -69,49 +74,41 @@ class Xtal_Symmetry:
                     raw_reflection_imag = vol_fourier(2*ix+1, iy, iz)
                     raw_reflection = numpy.complex(raw_reflection_real, raw_reflection_imag)
                     #print raw_reflection
-                    if(numpy.absolute(raw_reflection) > 0.001):
+                    if(numpy.absolute(raw_reflection) > amp_epsilon):
                         vol_sym_fou.set_value_at(2*ix, iy, iz, raw_reflection_real)
                         vol_sym_fou.set_value_at(2*ix+1, iy, iz, raw_reflection_imag)
                         assignments[ix, iy, iz] += 1
                         amplitude = numpy.absolute(raw_reflection)
                         phase = numpy.angle(raw_reflection)
-                        # Add symmetric points
-                        for operator_index in range(0, 15):
-                            sym_operations = Symmetry_Operations(operator_index, self.symmetry)
-                            if not sym_operations.skip_operation(): 
-                                h_sym, k_sym, l_sym = sym_operations.get_new_miller_indices(h, k, l)
-                                phase_new = sym_operations.get_phase_change(phase, h_sym, k_sym)
-                                #Bring h_sym value to (-x_center, x_center)
-                                if h_sym > h_max:
-                                    h_sym = h_sym - 2*(h_max+1)
-                                    
-                                # If spot is in negative H half fill the Friedel symmetric spot instead
-                                if h_sym<0:
-                                    [h_sym, k_sym, l_sym, phase_new] = [-1* h_sym, -1*k_sym, -1*l_sym, -1*phase_new]
-                                
-                                #print '{:2d} - ({:3d},{:3d},{:3d}) -> ({:3d},{:3d},{:3d}) and {} -> {}' .format(operator_index, h, k, l, h_sym, k_sym, l_sym, phase, phase_new) 
-                                
-                                new_px = amplitude*numpy.cos(phase_new)
-                                new_py = amplitude*numpy.sin(phase_new)
-                                #print '{} {}' .format(raw_reflection, numpy.complex(raw_px, raw_py))
-                                
-                                [ix_sym, iy_sym, iz_sym] = [h_sym, k_sym, l_sym]
-                                
-                                if iy_sym <0:
-                                    iy_sym = iy_sym + ny
-                                    
-                                if iz_sym <0:
-                                    iz_sym = iz_sym + nz
-                                
+                        
+                        # Add symmetric points 
+                        '''
+                        # Parallel version
+                        results = Parallel(n_jobs=1)(delayed(compute_operation_change)(h, k, l, h_max, ny, nz, amplitude, phase, self.symmetry, i) for i in range(15))
+                        for result in results:
+                            (ix_sym, iy_sym, iz_sym, new_px, new_py) = result
+                            if(ix_sym is not -1):    
                                 vol_sym_fou.set_value_at(2*ix_sym, iy_sym, iz_sym, new_px)
                                 vol_sym_fou.set_value_at(2*ix_sym+1, iy_sym, iz_sym, new_py)    
                                 #vol_sym_fou[h_sym, k_sym, l_sym] += numpy.complex(raw_px, raw_py)
-                                assignments[h_sym, k_sym, l_sym] += 1
-            
-            sys.stdout.write("|")
+                                assignments[ix_sym, iy_sym, iz_sym] += 1
+                        
+                        '''
+                        #Serial Version
+                        for operator_index in range(0, 15):
+                            ix_sym, iy_sym, iz_sym, new_px, new_py = compute_operation_change(h, k, l, h_max, ny, nz, amplitude, phase, self.symmetry, operator_index)
+                            if(ix_sym is not -1):    
+                                vol_sym_fou.set_value_at(2*ix_sym, iy_sym, iz_sym, new_px)
+                                vol_sym_fou.set_value_at(2*ix_sym+1, iy_sym, iz_sym, new_py)    
+                                #vol_sym_fou[h_sym, k_sym, l_sym] += numpy.complex(raw_px, raw_py)
+                                assignments[ix_sym, iy_sym, iz_sym] += 1
+                        
+            sys.stdout.write("=")
             sys.stdout.flush()
             
         sys.stdout.write("\n")
+        elapsed_time = time.time() - start_time
+        print elapsed_time
          
         #Average                       
         for ix in range(0, h_max+1):
@@ -123,13 +120,46 @@ class Xtal_Symmetry:
                         vol_sym_fou.set_value_at(2*ix+1, iy, iz, vol_sym_fou(2*ix+1, iy, iz)/assignments[ix, iy, iz])
                         
         return vol_sym_fou.get_ift()
+
+    
+def compute_operation_change(h, k, l, h_max, ny, nz, amplitude, phase, symmetry, index):
+    sym_operations = Symmetry_Operations(index, symmetry)
+    ix_sym = iy_sym = iz_sym = -1
+    px_new = py_new = 0.0
+    if not sym_operations.skip_operation():
+        h_sym, k_sym, l_sym = sym_operations.get_new_miller_indices(h, k, l)
+        phase_new = sym_operations.get_phase_change(phase, h_sym, k_sym)
+        #Bring h_sym value to (-x_center, x_center)
+        if h_sym > h_max:
+            h_sym = h_sym - 2*(h_max+1)
+            
+        # If spot is in negative H half fill the Friedel symmetric spot instead
+        if h_sym<0:
+            [h_sym, k_sym, l_sym, phase_new] = [-1* h_sym, -1*k_sym, -1*l_sym, -1*phase_new]
+        
+        #print '{:2d} - ({:3d},{:3d},{:3d}) -> ({:3d},{:3d},{:3d}) and {} -> {}' .format(operator_index, h, k, l, h_sym, k_sym, l_sym, phase, phase_new) 
+        
+        px_new = amplitude*numpy.cos(phase_new)
+        py_new = amplitude*numpy.sin(phase_new)
+        #print '{} {}' .format(raw_reflection, numpy.complex(raw_px, raw_py))
+        
+        [ix_sym, iy_sym, iz_sym] = [h_sym, k_sym, l_sym]
+        
+        if iy_sym <0:
+            iy_sym = iy_sym + ny
+            
+        if iz_sym <0:
+            iz_sym = iz_sym + nz
+            
+    return ix_sym, iy_sym, iz_sym, px_new, py_new
+
                         
 class Symmetry_Operations:
     '''
     The class holds various operations which can occur
     due to a present symmetry!
     Various Operations and change of index:
-    #Op 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15  
+    #Op 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14  
      H=-h +h -h +k +k -k -k +h -h +k -k -h +h -h +h  JSIMPL
                                         -k +k -k +k     JSCREW
      K=+k -k -k +h -h +h -h -h +h -h +h +h -h +k -k         JH180

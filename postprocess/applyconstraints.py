@@ -12,6 +12,8 @@ from emvol import EMVol
 from constraints.RealSpace import *
 from constraints.ReciprocalSpace import *
 
+from operations.NoiseRemoval import *
+
 from utils.OutputUtils import *
 from utils.SystemUtils import *
 
@@ -65,7 +67,7 @@ class Constraints:
             
             # Apply the Fourier space constraints
             itr_fou = itr_real.get_fft()
-            itr_fou = replace_true_reflections(itr_fou, initial_fou, self._outUtil, self._amp_epsilon)
+            itr_fou = replace_true_reflections(itr_fou, initial_fou, self._outUtil, self._amp_epsilon, 0.9)
             #itr_fou = increase_high_res_intensity(itr_fou, self._highest_res, self._outUtil)
             itr_fou = itr_fou.low_pass(self._highest_res)
             
@@ -75,11 +77,21 @@ class Constraints:
             itr_real.write_image(self._outUtil.output_path+"/final_vol.mrc")
             
             print 'Final volume statistics:'
-            itr_real.print_statistics()
+            itr_real.print_statistics(self._amp_epsilon)
 
             #self._outUtil.file_name = "radial_intensity.png"
             #self._outUtil.write_radial_intensity_image(itr_real, self._highest_res)            
             # Calculate the measures to track the progress of the iteration
+        
+        
+        print 'Done with iterations.. Removing noise... \n'
+        
+        # Remove noise
+        #itr_real = itr_real*EMVol(get_noise_mask(itr_real))
+        #self._outUtil.output_path = output_root
+        #self._outUtil.file_name = "noise_removed.mrc"
+        #print "Done.. writing at {}\n" .format(self._outUtil.get_write_name())
+        #itr_real.write_image(self._outUtil.get_write_name())
            
-        return itr_real
+        return itr_real.symmetrize(self._symmetry, self._amp_epsilon)
             

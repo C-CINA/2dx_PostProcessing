@@ -37,7 +37,7 @@ def increase_high_res_intensity(vol_fou, highest_res, outUtil):
 
 
 
-def replace_true_reflections(vol_fourier, vol_known, outUtil, amp_epsilon):
+def replace_true_reflections(vol_fourier, vol_known, outUtil, amp_epsilon, fraction_to_replace):
     '''
     Replaces reflections of vol_fourier with vol_known
     '''    
@@ -47,8 +47,13 @@ def replace_true_reflections(vol_fourier, vol_known, outUtil, amp_epsilon):
     for ix in range(0, int(vol_fourier.nx/2)):
         for iy in range(0, vol_fourier.ny):
             for iz in range(0, vol_fourier.nz):
-                ref_known = vol_known[ix, iy, iz]
+                real_current = vol_fourier(2*ix, iy, iz)
+                imag_current = vol_fourier(2*ix+1, iy, iz)
+                real_known = vol_known(2*ix, iy, iz)
+                imag_known = vol_known(2*ix+1, iy, iz)
+                ref_known = numpy.complex(real_known, imag_known)
                 if(numpy.absolute(ref_known) > amp_epsilon):
-                    vol_fourier[ix, iy, iz] = ref_known
+                    vol_fourier.set_value_at(2*ix, iy, iz, real_known*fraction_to_replace + real_current*(1-fraction_to_replace))
+                    vol_fourier.set_value_at(2*ix+1, iy, iz, imag_known*fraction_to_replace + imag_current*(1-fraction_to_replace))
 
     return vol_fourier

@@ -66,7 +66,8 @@ def get_adaptive_slab_mask(volume, membrane_height):
     
     #Calculate second cut
     second_cut = first_cut
-    vol_lp = volume.low_pass(1.0/10.0)
+    # Niko Grigorieff says that for alignments highest resolution should not be more than 15 A
+    vol_lp = volume.low_pass(1.0/15.0) 
     
     vol_lp_thrs = EMVol(vol_lp * binarize(vol_lp, vol_lp.get_mean()+vol_lp.get_std()))
     dens_profile = vol_lp_thrs.z_density_profile()
@@ -74,7 +75,7 @@ def get_adaptive_slab_mask(volume, membrane_height):
     change_max_indices = get_local_maxima(dens_profile_change)
     
     if(change_max_indices[0] < z_center):
-        second_cut = change_max_indices[0]
+        second_cut = change_max_indices[0] - 20 # Breathing space of 20 voxels
     
     '''
     change_max_possible = []
@@ -89,9 +90,10 @@ def get_adaptive_slab_mask(volume, membrane_height):
         second_cut = first_cut
     
     #Calculate third cut
-    third_cut = second_cut + int(nz*0.1)
-    if(third_cut >= z_center):
-        third_cut = z_center
+    third_cut = z_center
+    #third_cut = second_cut + int(nz*0.1)
+    #if(third_cut >= z_center):
+    #    third_cut = z_center
     
     print 'Cuts applied: {} {} {}' .format(first_cut, second_cut, third_cut)
     # Generate the mask

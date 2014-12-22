@@ -1,5 +1,7 @@
 import numpy
 
+from SystemUtils import *
+
 def sign(number):
     """Will return 1 for positive,
     -1 for negative, and 0 for 0"""
@@ -50,3 +52,20 @@ def project_along_y(mat_3D):
             projection[iz, ix] = y_sum
             
     return projection
+
+def fom_to_xarg_array():
+    '''
+    Get the xarg values from foms
+    '''
+    
+    f = open(module_path()+"/fom_xarg.dat")
+    foms = []
+    xargs = []
+    for line in f.readlines():
+        fom_str, xarg_str = line.split()
+        foms.append(float(fom_str))
+        xargs.append(float(xarg_str))
+        
+    return foms, xargs
+
+    
