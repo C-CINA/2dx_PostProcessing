@@ -89,7 +89,6 @@ class EMVol(libpyEMData2.EMData):
             if not (x_res < max_resolution or y_res < max_resolution or z_res< max_resolution):
                 if(current_h!=h or current_k!=k or current_l!=l):
                     if(current_h!=-1):
-                        print [h, k, l, x_res, y_res, z_res]
                         xarg_sum = sum(numpy.interp(foms*100, fom_xarg_foms, fom_xarg_xargs))
                         
                         #Modified Bessel function values at 0th and 1st order
