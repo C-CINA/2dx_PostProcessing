@@ -2,10 +2,11 @@ import numpy
 
 from SystemUtils import *
 
+
 def sign(number):
     """Will return 1 for positive,
     -1 for negative, and 0 for 0"""
-    try:return number/abs(number)
+    try:return number / abs(number)
     except ZeroDivisionError:return 0
 
 def get_local_minima(data):
@@ -30,7 +31,7 @@ def get_nearest_odd(num):
     '''
     Returns an odd number smaller or equal to the input number
     '''
-    return int(round(num/2.)*2 - 1)
+    return int(round(num / 2.) * 2 - 1)
 
 
 def project_along_y(mat_3D):
@@ -58,7 +59,7 @@ def fom_to_xarg_array():
     Get the xarg values from foms
     '''
     
-    f = open(module_path()+"/fom_xarg.dat")
+    f = open(module_path() + "/fom_xarg.dat")
     foms = []
     xargs = []
     for line in f.readlines():

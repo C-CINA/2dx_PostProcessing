@@ -1,28 +1,28 @@
 
-#'''
+# '''
 # Main method for the package to post-process the 3D-Images created from 2D-Electron crystallography
-#'''
+# '''
 #
-#__author__='Nikhil Biyani, C-CINA, University of Basel'
-#__version__='04/12/2014'
-#__email__="nikhilbiyani@gmail.com"
+# __author__='Nikhil Biyani, C-CINA, University of Basel'
+# __version__='04/12/2014'
+# __email__="nikhilbiyani@gmail.com"
 
 
 import sys
 
-from emvol import EMVol
 from applyconstraints import Constraints
-
+from emvol import EMVol
 import utils.InputUtils as inp
-import utils.SystemUtils as system
 import utils.OutputUtils as out
+import utils.SystemUtils as system
 
-if __name__ =='__main__':
+
+if __name__ == '__main__':
     
     print '\nProgram Initiated...\n'
     
     # Get the inputs
-    input_parser = inp.InputParser(args = sys.argv[1:])
+    input_parser = inp.InputParser(args=sys.argv[1:])
     input_parser.print_inputs()
     inputs = input_parser.arguments
 
@@ -40,7 +40,7 @@ if __name__ =='__main__':
     outUtil = out.OutputUtils(output_path=dir_out)
     
     # Convert input hkz file to mrc
-    print "Converting image from:\n {}/{}" .format(dir_in,filename_in)
+    print "Converting image from:\n {}/{}" .format(dir_in, filename_in)
     vol_input_raw = EMVol.from_hkz_file(inputs.hkz_file, inputs.nx, inputs.ny, inputs.nz, inputs.apix, inputs.max_resolution)
     outUtil.file_name = "input_volume_raw.mrc"
     print "Done.. writing at {}\n" .format(outUtil.get_write_name())

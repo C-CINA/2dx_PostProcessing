@@ -1,19 +1,19 @@
-#'''
-#Tools for manipulation of 3D-EM Image
-#'''
+# '''
+# Tools for manipulation of 3D-EM Image
+# '''
 #
-#__author__='Nikhil Biyani, C-CINA, University of Basel'
-#__version__='04/12/2014'
-#__email__="nikhilbiyani@gmail.com"
+# __author__='Nikhil Biyani, C-CINA, University of Basel'
+# __version__='04/12/2014'
+# __email__="nikhilbiyani@gmail.com"
 
-import numpy
-from scipy import special
-
+from filter import filt_tanl, filt_tophatb
+from fundamentals import fft
 import libpyEMData2
 import libpyUtils2
 from utilities import model_blank
-from fundamentals import fft
-from filter import filt_tanl, filt_tophatb
+
+import numpy
+from scipy import special
 
 from symmetrization import Xtal_Symmetry
 from utils.NumericalUtils import *
@@ -56,7 +56,7 @@ class EMVol(libpyEMData2.EMData):
         
         f = open(hkz_file)
         
-        nyquist = 1.0/(2*apix)
+        nyquist = 1.0 / (2 * apix)
         current_h = -1
         current_k = -1
         current_l = -1
@@ -71,44 +71,44 @@ class EMVol(libpyEMData2.EMData):
             # Miller indices
             h = int(h)
             k = int(k)
-            l = int(float(z)*nz) # Convert the z* to l
+            l = int(float(z) * nz)  # Convert the z* to l
             
-            #Resolutions
-            x_res = y_res = z_res = 1000 # Definition of infinity
-            if not (h==0 or k==0 or l==0):
-                [x_res, y_res, z_res] = [dim/(2*nyquist*miller) for dim,miller in zip([nx, ny, nz],[h, k, l])]
+            # Resolutions
+            x_res = y_res = z_res = 1000  # Definition of infinity
+            if not (h == 0 or k == 0 or l == 0):
+                [x_res, y_res, z_res] = [dim / (2 * nyquist * miller) for dim, miller in zip([nx, ny, nz], [h, k, l])]
             
             # Shift the phase so that protein is in center of z
-            ph += 180.0*l
+            ph += 180.0 * l
             
             # FOMs
-            fom = numpy.cos(float(sph)/180*numpy.pi)
+            fom = numpy.cos(float(sph) / 180 * numpy.pi)
             if(float(sph) > 90):
                 fom = 0
             
-            if not (x_res < max_resolution or y_res < max_resolution or z_res< max_resolution):
-                if(current_h!=h or current_k!=k or current_l!=l):
-                    if(current_h!=-1):
-                        xarg_sum = sum(numpy.interp([fo*100 for fo in foms], fom_xarg_foms, fom_xarg_xargs))
+            if not (x_res < max_resolution or y_res < max_resolution or z_res < max_resolution):
+                if(current_h != h or current_k != k or current_l != l):
+                    if(current_h != -1):
+                        xarg_sum = sum(numpy.interp([fo * 100 for fo in foms], fom_xarg_foms, fom_xarg_xargs))
                         if xarg_sum > 55:
                             xarg_sum = 55
 
-                        #Modified Bessel function values at 0th and 1st order
+                        # Modified Bessel function values at 0th and 1st order
                         i0 = special.i0(xarg_sum)
                         i1 = special.i1(xarg_sum)
-                        xarg_avg = i1/i0
+                        xarg_avg = i1 / i0
                         alternating = xarg_avg
                         if not  0 <= xarg_avg <= 1:
                             print 'WARNING: Unexpected values from modified Bessel functions: xarg={}, i0={}, i1={}' .format(xarg_sum, i0, i1)
-                            xarg_avg = nump.cos(1.0/xarg_sum)
+                            xarg_avg = nump.cos(1.0 / xarg_sum)
                         
                         fom_sum = sum(foms)
-                        foms = [fo*(xarg_avg/fom_sum) for fo in foms if not fom_sum==0]
-                        reflections_sum = sum([ref_i*fo for ref_i,fo in zip(reflections, foms)])
+                        foms = [fo * (xarg_avg / fom_sum) for fo in foms if not fom_sum == 0]
+                        reflections_sum = sum([ref_i * fo for ref_i, fo in zip(reflections, foms)])
                         amplitude_sum = numpy.absolute(reflections_sum)
                         phase_sum = numpy.angle(reflections_sum)
-                        vol_fourier.set_value_at(2*current_h, current_k, current_l, amplitude_sum*numpy.cos(phase_sum))
-                        vol_fourier.set_value_at(2*current_h+1, current_k, current_l, amplitude_sum*numpy.sin(phase_sum))
+                        vol_fourier.set_value_at(2 * current_h, current_k, current_l, amplitude_sum * numpy.cos(phase_sum))
+                        vol_fourier.set_value_at(2 * current_h + 1, current_k, current_l, amplitude_sum * numpy.sin(phase_sum))
                         del reflections
                         del foms[:]
                         reflections = []
@@ -118,13 +118,13 @@ class EMVol(libpyEMData2.EMData):
                     current_k = k
                     current_l = l
                     
-                reflections.append(numpy.complex(a*numpy.cos(ph*numpy.pi/180), a*numpy.sin(ph*numpy.pi/180)))
+                reflections.append(numpy.complex(a * numpy.cos(ph * numpy.pi / 180), a * numpy.sin(ph * numpy.pi / 180)))
                 foms.append(fom)
         
         f.close()    
         return vol_fourier.get_ift()
     
-    #Override operators
+    # Override operators
     def __add__(self, other):
         return EMVol(libpyEMData2.EMData.__add__(self, other))
     
@@ -246,7 +246,7 @@ class EMVol(libpyEMData2.EMData):
         
         image_fft = self.get_fft()
         
-        xlimit = int(image_fft.nx/2)
+        xlimit = int(image_fft.nx / 2)
         ylimit = image_fft.ny
         zlimit = image_fft.nz
         
@@ -286,7 +286,7 @@ class EMVol(libpyEMData2.EMData):
         return symmetrize_class.symmetrize(self, amp_epsilon)
         
         
-    def intensity_resolution_profile(self, highest_res=3, 
+    def intensity_resolution_profile(self, highest_res=3,
                                      lowest_res=20, res_spacing=1):
         '''
         Returns a 1D-array of intensities corresponding to all the
@@ -295,7 +295,7 @@ class EMVol(libpyEMData2.EMData):
         '''
         intensity_profile = []
         for res in numpy.arange(highest_res, lowest_res, res_spacing):
-            intensity_profile.append(self.get_insentisy_for_resoluion(res, res_spacing/2.0))
+            intensity_profile.append(self.get_insentisy_for_resoluion(res, res_spacing / 2.0))
             
         return intensity_profile
     
@@ -305,8 +305,8 @@ class EMVol(libpyEMData2.EMData):
         Calculates the intensities in the region: 
         (resolution-decay_width, resolution+decay_width)
         '''
-        low_freq = 1.0/(resolution + decay_width)
-        high_freq = 1.0/(resolution - decay_width)
+        low_freq = 1.0 / (resolution + decay_width)
+        high_freq = 1.0 / (resolution - decay_width)
         vol_bp = self.band_pass(low_freq, high_freq)
         intensity, size = vol_bp.get_intensity_and_fourier_size()
         return intensity
@@ -337,11 +337,11 @@ class EMVol(libpyEMData2.EMData):
         '''
         vol_fourier = self.get_fft()
         
-        k_max = int(vol_fourier.get_ysize()/2)
-        l_max = int(vol_fourier.get_zsize()/2)
+        k_max = int(vol_fourier.get_ysize() / 2)
+        l_max = int(vol_fourier.get_zsize() / 2)
         
         f = open(filename, 'w')
-        for ix in range(vol_fourier.get_xsize()/2):
+        for ix in range(vol_fourier.get_xsize() / 2):
             for iy in range(vol_fourier.get_ysize()):
                 for iz in range(vol_fourier.get_zsize()):
                     [h, k, l] = [ix, iy, iz]
@@ -351,14 +351,14 @@ class EMVol(libpyEMData2.EMData):
                     if l > l_max:
                         l = l - self.nz
                     
-                    real = vol_fourier.get_value_at(2*ix, iy, iz)
-                    imag = vol_fourier.get_value_at(2*ix+1, iy, iz)
+                    real = vol_fourier.get_value_at(2 * ix, iy, iz)
+                    imag = vol_fourier.get_value_at(2 * ix + 1, iy, iz)
                     complex = numpy.complex(real, imag)
                     amplitude = numpy.absolute(complex)
-                    phase = numpy.angle(complex)*180/numpy.pi
+                    phase = numpy.angle(complex) * 180 / numpy.pi
                     fom = 100.0
                     if(amplitude > amp_epsilon):
-                        print_str = '{:3d} {:3d} {:3d} {:10.5f} {:10.5f} {:10.5f}\n' .format(h,k,l, amplitude, phase, fom)
+                        print_str = '{:3d} {:3d} {:3d} {:10.5f} {:10.5f} {:10.5f}\n' .format(h, k, l, amplitude, phase, fom)
                         f.write(print_str)
                         
         f.close()

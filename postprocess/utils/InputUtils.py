@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
+
 from utils.SystemUtils import *
+
 
 class Input:
     '''
@@ -28,7 +30,7 @@ class InputParser:
     '''
     inputs = []
 
-    def __init__(self, input_list_file=module_path()+"/inputs.default_value", args=None):
+    def __init__(self, input_list_file=module_path() + "/inputs.default_value", args=None):
         self._add_input(input_list_file)
         self._init_parser()
         self.arguments = self._parse(args)
@@ -95,10 +97,10 @@ class InputParser:
                 flag = input.name
                 self.parser.add_argument(flag, help=input.help)
             else:
-                self.parser.add_argument('-'+input.identifier, '--'+input.name,
-                                         default = input.default,
-                                         type = input.type,
-                                         help = input.help)
+                self.parser.add_argument('-' + input.identifier, '--' + input.name,
+                                         default=input.default,
+                                         type=input.type,
+                                         help=input.help)
 
     def _parse(self, args):
          return self.parser.parse_args(args)

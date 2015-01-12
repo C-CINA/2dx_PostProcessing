@@ -2,6 +2,7 @@ import os
 import sys
 from time import gmtime, strftime
 
+
 def file_present(file):
     '''
     Checks if a file is present or not with the input path

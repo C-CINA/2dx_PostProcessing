@@ -1,16 +1,17 @@
-import numpy
-
 from EMAN2 import *
 from sparx import *
+
+import numpy
+
 
 def taper_edges(vol, edge_length):
     nx = vol.get_xsize()
     ny = vol.get_ysize()
     nz = vol.get_zsize()
     
-    x_edge = numpy.concatenate((range(0, edge_length), range(nx-edge_length, nx)))
-    y_edge = numpy.concatenate((range(0, edge_length), range(ny-edge_length, ny)))
-    z_edge = numpy.concatenate((range(0, edge_length), range(nz-edge_length, nz)))
+    x_edge = numpy.concatenate((range(0, edge_length), range(nx - edge_length, nx)))
+    y_edge = numpy.concatenate((range(0, edge_length), range(ny - edge_length, ny)))
+    z_edge = numpy.concatenate((range(0, edge_length), range(nz - edge_length, nz)))
     
     for ix in x_edge:
         for iy in y_edge:
