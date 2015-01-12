@@ -331,8 +331,34 @@ class EMVol(libpyEMData2.EMData):
         return densities
     
     
-#-------------------------------------------
-# EXTRA ROUTINES TO SUPPORT PROCESSING
-#
-#
-#-------------------------------------------
+    def write_hkl(self, filename, amp_epsilon=0.0):
+        '''
+        Prints the current data in hkl format
+        '''
+        vol_fourier = self.get_fft()
+        
+        k_max = int(vol_fourier.get_ysize()/2)
+        l_max = int(vol_fourier.get_zsize()/2)
+        
+        f = open(filename, 'w')
+        for ix in range(vol_fourier.get_xsize()/2):
+            for iy in range(vol_fourier.get_ysize()):
+                for iz in range(vol_fourier.get_zsize()):
+                    [h, k, l] = [ix, iy, iz]
+                    if k > k_max:
+                        k = k - self.ny
+                        
+                    if l > l_max:
+                        l = l - self.nz
+                    
+                    real = vol_fourier.get_value_at(2*ix, iy, iz)
+                    imag = vol_fourier.get_value_at(2*ix+1, iy, iz)
+                    complex = numpy.complex(real, imag)
+                    amplitude = numpy.absolute(complex)
+                    phase = numpy.angle(complex)*180/numpy.pi
+                    fom = 100.0
+                    if(amplitude > amp_epsilon):
+                        print_str = '{:3d} {:3d} {:3d} {:10.5f} {:10.5f} {:10.5f}\n' .format(h,k,l, amplitude, phase, fom)
+                        f.write(print_str)
+                        
+        f.close()
