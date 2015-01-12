@@ -16,7 +16,7 @@ import numpy
 from scipy import special
 
 from symmetrization import Xtal_Symmetry
-from utils.NumericalUtils import *
+from utils.NumericalUtils import fom_to_xarg_array
 
 
 class EMVol(libpyEMData2.EMData):
@@ -37,7 +37,7 @@ class EMVol(libpyEMData2.EMData):
         '''
         Creates an empty volume of size nx, ny, nz with the background value
         '''
-        return cls(model_blank(nx, ny, nz, bckg))
+        return cls(model_blank(nx, ny, nz, background))
 
     @classmethod
     def from_hkz_file(cls, hkz_file, nx, ny, nz, apix, max_resolution):
@@ -97,10 +97,9 @@ class EMVol(libpyEMData2.EMData):
                         i0 = special.i0(xarg_sum)
                         i1 = special.i1(xarg_sum)
                         xarg_avg = i1 / i0
-                        alternating = xarg_avg
                         if not  0 <= xarg_avg <= 1:
                             print 'WARNING: Unexpected values from modified Bessel functions: xarg={}, i0={}, i1={}' .format(xarg_sum, i0, i1)
-                            xarg_avg = nump.cos(1.0 / xarg_sum)
+                            xarg_avg = numpy.cos(1.0 / xarg_sum)
                         
                         fom_sum = sum(foms)
                         foms = [fo * (xarg_avg / fom_sum) for fo in foms if not fom_sum == 0]
@@ -353,9 +352,9 @@ class EMVol(libpyEMData2.EMData):
                     
                     real = vol_fourier.get_value_at(2 * ix, iy, iz)
                     imag = vol_fourier.get_value_at(2 * ix + 1, iy, iz)
-                    complex = numpy.complex(real, imag)
-                    amplitude = numpy.absolute(complex)
-                    phase = numpy.angle(complex) * 180 / numpy.pi
+                    compl = numpy.complex(real, imag)
+                    amplitude = numpy.absolute(compl)
+                    phase = numpy.angle(compl) * 180 / numpy.pi
                     fom = 100.0
                     if(amplitude > amp_epsilon):
                         print_str = '{:3d} {:3d} {:3d} {:10.5f} {:10.5f} {:10.5f}\n' .format(h, k, l, amplitude, phase, fom)

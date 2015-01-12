@@ -1,6 +1,6 @@
 import numpy
 
-from SystemUtils import *
+from SystemUtils import module_path
 
 
 def sign(number):
@@ -43,13 +43,13 @@ def project_along_y(mat_3D):
     ny = mat_3D.shape[1]
     nz = mat_3D.shape[2]
     
-    projection = zeros((nz, nx))
+    projection = numpy.zeros((nz, nx))
     
     for ix in range(0, nx):
         for iz in range(0, nz):
             y_sum = 0
             for iy in range(0, ny):
-                y_sum += mat[ix, iy, iz]
+                y_sum += mat_3D[ix, iy, iz]
             projection[iz, ix] = y_sum
             
     return projection

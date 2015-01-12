@@ -1,12 +1,12 @@
-from EMAN2 import *
-from sparx import *
+
 import sys
 import time
 
 import numpy
 
 import emvol
-from utils.NumericalUtils import *
+from utils.NumericalUtils import sign
+from utilities import model_blank
 
 
 class Xtal_Symmetry:
@@ -118,7 +118,7 @@ class Xtal_Symmetry:
                         vol_sym_fou.set_value_at(2 * ix + 1, iy, iz, sums[ix, iy, iz].imag / assignments[ix, iy, iz])
         
         sys.stdout.write("\n")
-        print 'Elapsed time = {}' .format(time.time() - start_time)
+        print 'Elapsed time = {} seconds' .format(time.time() - start_time)
                         
         return vol_sym_fou.get_ift()
 

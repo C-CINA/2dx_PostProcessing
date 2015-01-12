@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from utils.SystemUtils import *
+from SystemUtils import module_path
 
 
 class Input:
@@ -15,12 +15,12 @@ class Input:
     help       : help text for the variable
     '''
     
-    def __init__(self, name, identifier=None, default=None, inptype=None, help=""):
+    def __init__(self, name, identifier=None, default=None, inptype=None, helpx=""):
         self.name = name
         self.identifier = identifier
         self.default = default
         self.type = inptype
-        self.help = help
+        self.helpx = helpx
 
     
 class InputParser:
@@ -51,16 +51,16 @@ class InputParser:
             if not line.startswith("#") and line.strip():
                 
                 try:
-                    [var, id, default_r, type_r, help_r] = ' '.join(line.split()).split(' ', 4)
+                    [var, idx, default_r, type_r, help_r] = ' '.join(line.split()).split(' ', 4)
                 except:
                     print 'WARNING: Error in reading file specifying inputs, Please check:'
                     print '{}\n' .format(line)
                     continue
                 
                 if help_r is not 'None':
-                    help = help_r
+                    helpx = help_r
                 else:
-                    help = ""
+                    helpx = ""
                   
                 if default_r == 'None':
                     name = var
@@ -68,7 +68,7 @@ class InputParser:
                     default = None
                 else:
                     name = var
-                    identifier = id
+                    identifier = idx
                     default = default_r
                     
                 if type_r == 'int':
@@ -82,7 +82,7 @@ class InputParser:
                 else:
                     inptype = None
             
-                self.inputs.append(Input(name, identifier, default, inptype, help))
+                self.inputs.append(Input(name, identifier, default, inptype, helpx))
         
         f.close()          
 
@@ -92,18 +92,18 @@ class InputParser:
         
         self.parser = ArgumentParser(description=description)
         
-        for input in self.inputs:
-            if input.identifier == None:
-                flag = input.name
-                self.parser.add_argument(flag, help=input.help)
+        for inputx in self.inputs:
+            if inputx.identifier == None:
+                flag = inputx.name
+                self.parser.add_argument(flag, help=inputx.helpx)
             else:
-                self.parser.add_argument('-' + input.identifier, '--' + input.name,
-                                         default=input.default,
-                                         type=input.type,
-                                         help=input.help)
+                self.parser.add_argument('-' + inputx.identifier, '--' + inputx.name,
+                                         default=inputx.default,
+                                         type=inputx.type,
+                                         help=inputx.helpx)
 
     def _parse(self, args):
-         return self.parser.parse_args(args)
+        return self.parser.parse_args(args)
     
     def print_inputs(self):
         '''

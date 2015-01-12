@@ -3,11 +3,11 @@ import sys
 from time import gmtime, strftime
 
 
-def file_present(file):
+def file_present(filename):
     '''
     Checks if a file is present or not with the input path
     '''
-    return os.path.isfile(file)
+    return os.path.isfile(filename)
 
 def create_dir(dir_path):
     '''
@@ -24,11 +24,11 @@ def get_file_name(path):
     '''
     return os.path.basename(path)
  
-def get_dir_path(file):
+def get_dir_path(filename):
     '''
     Returns the directory path of the given file
     '''
-    return os.path.dirname(os.path.realpath(file))
+    return os.path.dirname(os.path.realpath(filename))
  
 def get_current_time():
     '''
