@@ -89,15 +89,17 @@ class EMVol(libpyEMData2.EMData):
             if not (x_res < max_resolution or y_res < max_resolution or z_res< max_resolution):
                 if(current_h!=h or current_k!=k or current_l!=l):
                     if(current_h!=-1):
-                        xarg_sum = sum(numpy.interp(foms*100, fom_xarg_foms, fom_xarg_xargs))
-                        
+                        xarg_sum = sum(numpy.interp([fo*100 for fo in foms], fom_xarg_foms, fom_xarg_xargs))
+                        if xarg_sum > 55:
+                            xarg_sum = 55
+
                         #Modified Bessel function values at 0th and 1st order
                         i0 = special.i0(xarg_sum)
                         i1 = special.i1(xarg_sum)
                         xarg_avg = i1/i0
                         alternating = xarg_avg
                         if not  0 <= xarg_avg <= 1:
-                            print 'WARNING: Unexpected values from modified Bessel functions: xarg={}, i0={}, i1={}' .format(xarg_avg, i0, i1)
+                            print 'WARNING: Unexpected values from modified Bessel functions: xarg={}, i0={}, i1={}' .format(xarg_sum, i0, i1)
                             xarg_avg = nump.cos(1.0/xarg_sum)
                         
                         fom_sum = sum(foms)
