@@ -3,11 +3,10 @@ A python script which contains all the methods to apply constraints to
 the real space volume
 """
 
-from EMAN2 import *
-from sparx import *
-
-from emvol import EMVol
-from utils.NumericalUtils import *
+from postprocess.emvol import EMVol
+from postprocess.utils.NumericalUtils import get_local_maxima
+from morphology import binarize
+from utilities import model_blank
 
 
 def get_membrane_slab_mask(volume, membrane_height):
@@ -21,22 +20,6 @@ def get_membrane_slab_mask(volume, membrane_height):
         
     # Choose a suitable method for masking
     return get_adaptive_slab_mask(volume, membrane_height)
-
-
-def get_2D_slab_mask(volume, membrane_height):
-    '''
-    Generates a binary mask which constraints the input membrane volume in a 2D slab.
-    The height of the slab is used as the input membrane height
-    '''
-    
-    slab_mask = model_blank(nx, ny, nz)
-    slab_start = int((nz - membrane_height) / 2)
-    for ix in range(0, nx):
-        for iy in range(0, ny):
-            for iz in range(slab_start, slab_start + membrane_height):
-                slab_mask[ix, iy, iz] = 1
-                
-    return slab_mask
 
 
 def get_adaptive_slab_mask(volume, membrane_height):

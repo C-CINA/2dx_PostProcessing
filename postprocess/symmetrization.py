@@ -4,7 +4,7 @@ import time
 
 import numpy
 
-import emvol
+from postprocess.emvol import EMVol
 from utils.NumericalUtils import sign
 from utilities import model_blank
 
@@ -108,7 +108,7 @@ class Xtal_Symmetry:
             sys.stdout.flush()
          
         # Assign the values
-        vol_sym = emvol.EMVol(model_blank(nx, ny, nz))
+        vol_sym = EMVol(model_blank(nx, ny, nz))
         vol_sym_fou = vol_sym.get_fft()                       
         for ix in range(0, h_max + 1):
             for iy in range(0, ny):
