@@ -38,7 +38,7 @@ if __name__ == '__main__':
     outUtil.file_name = "input_volume_raw.hkl"
     print "Writing hkl at {}\n" .format(outUtil.get_write_name())
     vol_input_raw.write_hkl(outUtil.get_write_name(), inputs.amp_epsilon)
-    
+    '''
     # Symmetrize input volume
     vol_input = vol_input_raw.symmetrize(inputs.symmetry, inputs.amp_epsilon)
     outUtil.file_name = "input_volume_symmetrized.mrc"
@@ -51,5 +51,5 @@ if __name__ == '__main__':
     
     print "Input volume information:"
     vol_input.print_info(inputs.amp_epsilon)
-    
+    '''
     
